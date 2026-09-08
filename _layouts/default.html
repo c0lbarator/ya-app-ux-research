@@ -5,41 +5,93 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>{{ page.title | default: site.title }}</title>
 
-  <!-- Подключение стилей выбранной темы GitHub Pages -->
-  <link rel="stylesheet" href="{{ "/assets/css/style.css?v=" | append: site.github.build_revision | relative_url }}">
+  <!-- Подключение базовых стилей темы GitHub Pages -->
+  <link rel="stylesheet" href="{{ "/assets/css/style.css" | relative_url }}">
+
+  <style>
+    /* 1. Стили для красивых таблиц */
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      margin: 1.5rem 0;
+      display: block;
+      overflow-x: auto;
+    }
+    table th, table td {
+      border: 1px solid #d0d7de;
+      padding: 8px 13px;
+    }
+    table th {
+      background-color: #f6f8fa;
+      font-weight: 600;
+    }
+    table tr:nth-child(even) {
+      background-color: #f6f8fa;
+    }
+
+    /* 2. Стили для GitHub Alert / Callout блоков (Note, Warning, Tip и т.д.) */
+    blockquote {
+      margin: 1.5rem 0;
+      padding: 0.5rem 1rem;
+      color: #24292f;
+      border-left: 0.25em solid #d0d7de;
+      background-color: #f6f8fa;
+    }
+
+    /* Дополнительное оформление специфичных Note/Warning, если они рендерятся цитатами */
+    blockquote.markdown-alert-note { border-left-color: #0969da; background-color: #ddf4ff; }
+    blockquote.markdown-alert-tip { border-left-color: #1a7f37; background-color: #dafbe1; }
+    blockquote.markdown-alert-important { border-left-color: #8250df; background-color: #fbefff; }
+    blockquote.markdown-alert-warning { border-left-color: #9a6700; background-color: #fff8c5; }
+    blockquote.markdown-alert-caution { border-left-color: #cf222e; background-color: #ffebe9; }
+
+    /* Исправление отображения кода Mermaid */
+    pre.mermaid {
+      background: transparent;
+      border: none;
+      text-align: center;
+    }
+  </style>
 </head>
 <body>
 
-  <header class="site-header">
+  <main class="page-content" aria-label="Content" style="max-width: 900px; margin: 0 auto; padding: 20px;">
     <div class="wrapper">
-      <a class="site-title" href="{{ "/" | relative_url }}">{{ site.title | default: "Моя документация" }}</a>
-    </div>
-  </header>
-
-  <main class="page-content" aria-label="Content">
-    <div class="wrapper">
-      <!-- Сюда подставляется содержимое ваших .md файлов -->
       {{ content }}
     </div>
   </main>
 
-  <!-- Автоматический рендеринг Mermaid-диаграмм -->
+  <!-- Скрипт рендеринга Mermaid и парсинга Callout-блоков -->
   <script type="module">
     import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
 
     document.addEventListener("DOMContentLoaded", function () {
-      // Jekyll оборачивает код mermaid в <pre><code class="language-mermaid">
-      // Находим такие блоки и подготавливаем их для библиотеки Mermaid
+      // 1. Преобразование блоков кода Mermaid
       document.querySelectorAll("pre code.language-mermaid").forEach(function (el) {
         const pre = el.parentElement;
         pre.classList.add("mermaid");
         pre.textContent = el.textContent;
       });
 
-      // Запускаем отрисовку диаграмм
+      // 2. Парсинг GitHub Callouts (> [!NOTE]) если Jekyll рендерит их как стандартные quote
+      document.querySelectorAll("blockquote").forEach(function (bq) {
+        const firstLine = bq.firstElementChild;
+        if (!firstLine) return;
+
+        const text = firstLine.innerHTML.trim();
+        const matches = text.match(/^\[\!(NOTE|TIP|IMPORTANT|WARNING|CAUTION)\]/i);
+
+        if (matches) {
+          const type = matches[1].toLowerCase();
+          bq.classList.add(`markdown-alert-${type}`);
+          firstLine.innerHTML = firstLine.innerHTML.replace(/^\[\!(NOTE|TIP|IMPORTANT|WARNING|CAUTION)\]/i, `<strong>${type.toUpperCase()}</strong>`);
+        }
+      });
+
+      // 3. Инициализация Mermaid
       mermaid.initialize({
         startOnLoad: true,
-        theme: 'default' // Доступные темы: 'default', 'forest', 'dark', 'neutral'
+        theme: 'default'
       });
     });
   </script>
