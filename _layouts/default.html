@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="{{ site.lang | default: "ru" }}">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ page.title | default: site.title }}</title>
+
+  <!-- Подключение стилей выбранной темы GitHub Pages -->
+  <link rel="stylesheet" href="{{ "/assets/css/style.css?v=" | append: site.github.build_revision | relative_url }}">
+</head>
+<body>
+
+  <header class="site-header">
+    <div class="wrapper">
+      <a class="site-title" href="{{ "/" | relative_url }}">{{ site.title | default: "Моя документация" }}</a>
+    </div>
+  </header>
+
+  <main class="page-content" aria-label="Content">
+    <div class="wrapper">
+      <!-- Сюда подставляется содержимое ваших .md файлов -->
+      {{ content }}
+    </div>
+  </main>
+
+  <!-- Автоматический рендеринг Mermaid-диаграмм -->
+  <script type="module">
+    import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+
+    document.addEventListener("DOMContentLoaded", function () {
+      // Jekyll оборачивает код mermaid в <pre><code class="language-mermaid">
+      // Находим такие блоки и подготавливаем их для библиотеки Mermaid
+      document.querySelectorAll("pre code.language-mermaid").forEach(function (el) {
+        const pre = el.parentElement;
+        pre.classList.add("mermaid");
+        pre.textContent = el.textContent;
+      });
+
+      // Запускаем отрисовку диаграмм
+      mermaid.initialize({
+        startOnLoad: true,
+        theme: 'default' // Доступные темы: 'default', 'forest', 'dark', 'neutral'
+      });
+    });
+  </script>
+
+</body>
+</html>
